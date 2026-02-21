@@ -6,3 +6,10 @@
 .image {
   object-position: top 20% right 0;
 }
+
+@media (max-width: 639px) {
+  .title {
+    text-align: center;
+    font-size: 40px;
+  }
+}

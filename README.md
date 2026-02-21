@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Wedding Gallery
 
-## Getting Started
+Сайт свадьбы на Next.js с preview и табами `Фото/Видео`.
 
-First, run the development server:
+## Подключение Яндекс.Диска API
+
+Галерея поддерживает 2 режима:
+- `Yandex API`: если указаны public key переменные из `.env.local`.
+- `Local fallback`: если переменных нет, берутся файлы из `public/img` и `public/video`.
+
+1. Опубликуй папки на Яндекс.Диске и получи `public_key` (или публичную ссылку) отдельно для фото и видео.
+2. Создай `.env.local` по образцу `.env.example`.
+3. Заполни:
+   - `YANDEX_DISK_PHOTOS_PUBLIC_KEY`
+   - `YANDEX_DISK_VIDEOS_PUBLIC_KEY`
+   - `YANDEX_DISK_PHOTOS_PATH` (обычно `/`)
+   - `YANDEX_DISK_VIDEOS_PATH` (обычно `/`)
+
+Медиа проксируются через `/api/yandex-file`, поэтому `next/image` работает без доп. `remotePatterns`.
+
+## Запуск
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Открой [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Полезно
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Фото: ожидаются файлы `1.webp ... n.webp`
+- Видео: ожидаются файлы `1.mp4 ... n.mp4`
+- Файлы сортируются по номеру автоматически.
 
-## Learn More
+## Build Note
 
-To learn more about Next.js, take a look at the following resources:
+В офлайн-среде `next build` может падать из-за загрузки Google Fonts.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run build
+```

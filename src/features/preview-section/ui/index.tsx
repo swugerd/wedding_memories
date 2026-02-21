@@ -27,9 +27,12 @@ export const PreviewSection = () => {
       <div className='bg-black-secondary absolute top-0 right-0 bottom-0 left-0' />
 
       <motion.h1
-        className={classNames('absolute bottom-[40px] left-[75px] text-7xl', {
+        className={classNames(
+          'absolute bottom-[40px] left-1/2 -translate-x-1/2 text-7xl md:left-[75px] md:translate-x-0',
+          {
           [styles.title]: true
-        })}
+          }
+        )}
         {...TITLE_ANIMATION}
       >
         Екатерина и Дмитрий
