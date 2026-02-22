@@ -4,6 +4,7 @@ const PHOTO_RATIOS = [1, 0.75, 1.2, 0.66, 1.4, 0.9, 0.82]
 const VIDEO_RATIOS = [16 / 9, 9 / 16, 4 / 5, 1, 3 / 4]
 const YANDEX_PUBLIC_API_URL = 'https://cloud-api.yandex.net/v1/disk/public/resources'
 const YANDEX_LIMIT = 1000
+const YANDEX_PREVIEW_SIZE = 'XXXL'
 const LOCAL_PHOTO_COUNT = 158
 const LOCAL_VIDEO_COUNT = 19
 const MEDIA_CACHE_TTL_MS = 5 * 60 * 1000
@@ -34,6 +35,8 @@ const mapToMediaItems = (
     fileName: string
     id: number
     src?: string
+    fullSrc?: string
+    thumbSrc?: string
     ratio?: number
     posterSrc?: string
   }>,
@@ -42,13 +45,21 @@ const mapToMediaItems = (
 ): GalleryMediaItem[] => {
   const ratios = type === 'photo' ? PHOTO_RATIOS : VIDEO_RATIOS
 
-  return files.map(({ fileName, id, src, ratio, posterSrc }, index) => ({
-    id,
-    src: basePath ? `${basePath}/${fileName}` : src ?? '',
-    alt: type === 'photo' ? `Свадебное фото ${id}` : `Свадебное видео ${id}`,
-    ratio: ratio && Number.isFinite(ratio) && ratio > 0 ? ratio : ratios[index % ratios.length],
-    posterSrc
-  }))
+  return files.map(({ fileName, id, src, fullSrc, thumbSrc, ratio, posterSrc }, index) => {
+    const defaultSrc = basePath ? `${basePath}/${fileName}` : src ?? ''
+    const resolvedFullSrc = fullSrc ?? defaultSrc
+    const resolvedThumbSrc = thumbSrc ?? defaultSrc
+
+    return {
+      id,
+      src: resolvedFullSrc,
+      fullSrc: resolvedFullSrc,
+      thumbSrc: resolvedThumbSrc,
+      alt: type === 'photo' ? `Свадебное фото ${id}` : `Свадебное видео ${id}`,
+      ratio: ratio && Number.isFinite(ratio) && ratio > 0 ? ratio : ratios[index % ratios.length],
+      posterSrc
+    }
+  })
 }
 
 type YandexEmbeddedItem = {
@@ -78,7 +89,9 @@ const listYandexPublicFiles = async (
     public_key: publicKey,
     path: folderPath,
     limit: String(YANDEX_LIMIT),
-    offset: '0'
+    offset: '0',
+    preview_size: YANDEX_PREVIEW_SIZE,
+    preview_crop: 'false'
   })
 
   const response = await fetch(`${YANDEX_PUBLIC_API_URL}?${searchParams.toString()}`, {
@@ -101,6 +114,15 @@ const listYandexPublicFiles = async (
         fileName: item.name,
         id,
         src: item.file ? toProxyUrl(item.file) : '',
+        fullSrc: item.file ? toProxyUrl(item.file) : '',
+        thumbSrc:
+          extension === '.webp'
+            ? item.preview
+              ? toProxyUrl(item.preview)
+              : item.file
+                ? toProxyUrl(item.file)
+                : ''
+            : undefined,
         posterSrc: extension === '.mp4' && item.preview ? toProxyUrl(item.preview) : undefined,
         ratio:
           item.width && item.height && item.height > 0

@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
   const rangeHeader = request.headers.get('range')
   const upstream = await fetch(sourceUrl, {
     headers: rangeHeader ? { range: rangeHeader } : undefined,
-    next: { revalidate: 300 }
+    next: { revalidate: 60 * 60 * 24 }
   })
 
   if (!upstream.ok || !upstream.body) {
@@ -36,16 +36,28 @@ export async function GET(request: NextRequest) {
 
   const headers = new Headers()
   const contentType = upstream.headers.get('content-type')
-  const cacheControl = upstream.headers.get('cache-control')
   const acceptRanges = upstream.headers.get('accept-ranges')
   const contentRange = upstream.headers.get('content-range')
   const contentLength = upstream.headers.get('content-length')
+  const contentDisposition = upstream.headers.get('content-disposition')
 
   if (contentType) {
     headers.set('content-type', contentType)
   }
 
-  headers.set('cache-control', cacheControl ?? 'public, max-age=300, s-maxage=300')
+  const isImage = contentType?.startsWith('image/') ?? false
+  const isVideo = contentType?.startsWith('video/') ?? false
+
+  if (rangeHeader || upstream.status === 206) {
+    headers.set('cache-control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400')
+  } else if (isImage) {
+    // Signed Yandex URLs are effectively content-addressed for our proxy key; cache hard to cut repeated traffic.
+    headers.set('cache-control', 'public, max-age=31536000, s-maxage=31536000, immutable')
+  } else if (isVideo) {
+    headers.set('cache-control', 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800')
+  } else {
+    headers.set('cache-control', 'public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400')
+  }
 
   if (acceptRanges) {
     headers.set('accept-ranges', acceptRanges)
@@ -57,6 +69,10 @@ export async function GET(request: NextRequest) {
 
   if (contentLength) {
     headers.set('content-length', contentLength)
+  }
+
+  if (contentDisposition) {
+    headers.set('content-disposition', contentDisposition)
   }
 
   return new NextResponse(upstream.body, {
