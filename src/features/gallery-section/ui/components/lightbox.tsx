@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useState } from 'react'
+import classNames from 'classnames'
 
 import { GalleryMediaItem } from '../../model/types'
 
@@ -27,7 +28,8 @@ export const Lightbox = ({
   const [isSwipeLocked, setIsSwipeLocked] = useState(false)
   const [loadedSrc, setLoadedSrc] = useState<string | null>(null)
   const currentItem = items[index]
-  const isImageLoaded = loadedSrc === currentItem?.src
+  const currentImageSrc = currentItem?.fullSrc ?? currentItem?.src
+  const isImageLoaded = loadedSrc === currentImageSrc
 
   useEffect(() => {
     const scrollY = window.scrollY
@@ -149,7 +151,12 @@ export const Lightbox = ({
           <span className={styles.lightboxNavIcon}>‹</span>
         </button>
 
-        <div className={styles.lightboxMedia} onClick={(event) => event.stopPropagation()}>
+        <div
+          className={classNames(styles.lightboxMedia, {
+            [styles.lightboxMediaLoading]: !isImageLoaded
+          })}
+          onClick={(event) => event.stopPropagation()}
+        >
           <button
             type='button'
             className={styles.lightboxTapZoneLeft}
@@ -165,14 +172,21 @@ export const Lightbox = ({
 
           {!isImageLoaded && <div className={styles.lightboxSpinner} />}
           <img
-            key={currentItem.src}
-            src={currentItem.src}
+            key={currentImageSrc}
+            src={currentImageSrc}
             alt={currentItem.alt}
             className={styles.lightboxImage}
             onClick={(event) => event.stopPropagation()}
-            onLoad={() => setLoadedSrc(currentItem.src)}
-            onError={() => setLoadedSrc(currentItem.src)}
-            style={{ opacity: isImageLoaded ? 1 : 0 }}
+            onLoad={() => {
+              setLoadedSrc(currentImageSrc)
+            }}
+            onError={() => {
+              setLoadedSrc(null)
+            }}
+            style={{
+              opacity: isImageLoaded ? 1 : 0,
+              visibility: isImageLoaded ? 'visible' : 'hidden'
+            }}
           />
         </div>
 

@@ -25,7 +25,7 @@ export const PhotoCard = ({
         onClick={onOpen}
       >
         <img
-          src={item.src}
+          src={item.thumbSrc ?? item.src}
           alt={item.alt}
           width={intrinsicWidth}
           height={intrinsicHeight}

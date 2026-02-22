@@ -27,7 +27,7 @@ export const VideoCard = ({
         <div className={styles.videoBox} style={{ '--ratio': safeRatio } as CSSProperties}>
           <video
             controls
-            preload='metadata'
+            preload='none'
             poster={item.posterSrc}
             className={styles.mediaVideo}
             playsInline

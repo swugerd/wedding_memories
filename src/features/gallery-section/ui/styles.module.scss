@@ -191,6 +191,11 @@
   z-index: 3;
 }
 
+.lightboxMediaLoading {
+  min-height: 160px;
+  min-width: 160px;
+}
+
 .lightboxImage {
   border-radius: 14px;
   max-height: 93vh;
@@ -212,7 +217,7 @@
 .lightboxSpinner::after {
   animation: spin 0.8s linear infinite;
   border: 3px solid rgba(255, 255, 255, 0.25);
-  border-radius: 999px;
+  border-radius: 50%;
   border-top-color: rgba(255, 255, 255, 0.95);
   content: '';
   height: 34px;
